@@ -67,7 +67,27 @@ userSchema.statics.isUserExists = async (userId: number) => {
 userSchema.pre('save', async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias, no-unused-vars, @typescript-eslint/no-unused-vars
   const user = this;
+  let userId = Math.floor(Math.random() * (99999999 - 10000000 + 1) + 10000000);
+  let userIdIsUnique = false;
+
+  // generating the userId here,
+  const reset = async () => {
+    while (!userIdIsUnique) {
+      const isDuplicated = await User.findOne({ userId: userId });
+      if (!isDuplicated) {
+        userIdIsUnique = true;
+        // console.log("It's a unique Id")
+      } else {
+        userId = Math.floor(
+          Math.random() * (99999999 - 10000000 + 1) + 10000000,
+        );
+      }
+    }
+  };
+  reset();
+
   user.password = await bcrypt.hash(user.password, Number(config.saltRound));
+  user.userId = userId;
   next();
 });
 userSchema.post('save', async function (doc, next) {
