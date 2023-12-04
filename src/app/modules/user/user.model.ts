@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { Document, Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import {
   TAddress,
   TFullName,
@@ -45,7 +45,7 @@ export const userSchema = new Schema<TUser, UserModel>({
   password: {
     type: String,
     required: [true, 'password must be provided'],
-    select: false,
+
   },
   fullName: {
     type: fullNameSchema,
