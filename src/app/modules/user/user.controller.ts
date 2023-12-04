@@ -67,4 +67,36 @@ const getUserByUserId = async (req: Request, res: Response) => {
     });
   }
 };
-export const userController = { createUser, getAllUsers, getUserByUserId };
+
+const updateUserByUserId = async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req?.params?.userId);
+    const userData = req?.body;
+    const user = await userServices.updateUserByUserIdToDB(userId, userData);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    console.log({ user });
+    res.json({
+      success: true,
+      message: 'User updated successfully!',
+      data: user,
+    });
+  } catch (error: any) {
+    res.json({
+      success: false,
+      message: 'User not found',
+      error: {
+        code: 404,
+        description: error?.message || 'User not found',
+      },
+    });
+  }
+};
+export const userController = {
+  createUser,
+  getAllUsers,
+  getUserByUserId,
+  updateUserByUserId,
+};

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import bcrypt from 'bcrypt';
 import { Schema, model } from 'mongoose';
 import {
@@ -45,7 +46,6 @@ export const userSchema = new Schema<TUser, UserModel>({
   password: {
     type: String,
     required: [true, 'password must be provided'],
-
   },
   fullName: {
     type: fullNameSchema,
@@ -74,16 +74,6 @@ userSchema.statics.findUser = async (userId: number, options: object) => {
   return user;
 };
 
-
-
-
-
-
-
-
-
-
-
 userSchema.pre('save', async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias, no-unused-vars, @typescript-eslint/no-unused-vars
   const user = this;
@@ -110,26 +100,34 @@ userSchema.pre('save', async function (next) {
   user.userId = userId;
   next();
 });
-userSchema.post('save', async function (doc, next) {
+userSchema.post('save', async function (doc: any, next) {
   //only the solution i have found to remove password field, though it through error on compile tile, but still it perfectly working on runtime
   doc.password = undefined;
 
   next();
 });
 
-// userSchema.post('findOne', function (doc, next) {
-//   doc.password = undefined;
-//   next();
-// });
+// hashing password before updating the user documenbt
+userSchema.pre('findOneAndUpdate', async function (next) {
+  const update: any = { ...this.getUpdate() };
 
-// userSchema.pre('find', function (next) {
-//   // console.log("This is this: ",this)
-//   this.find({ isDeleted: { $ne: true } });
-//   next();
-// });
-// userSchema.pre('findOne', function (next) {
-//   this.findOne({ isDeleted: { $ne: true } });
-//   next();
-// });
+  // console.log({ update });
+  // Only run this function if password was modified
+  if (update.password) {
+    // Hash the password
+    update.password = await bcrypt.hash(
+      update.password,
+      Number(config.saltRound),
+    );
+    this.setUpdate(update);
+  }
+
+  next();
+});
+
+userSchema.post('findOneAndUpdate', async function (doc, next) {
+  doc.password = undefined;
+  next();
+});
 
 export const User = model<TUser, UserModel>('User', userSchema);
