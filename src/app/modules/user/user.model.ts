@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { Schema, model } from 'mongoose';
+import { Document, Schema, model } from 'mongoose';
 import {
   TAddress,
   TFullName,
@@ -35,13 +35,18 @@ export const userSchema = new Schema<TUser, UserModel>({
     type: Number,
     required: [true, 'userId must be provided'],
     unique: true,
+    default: 10000000,
   },
   username: {
     type: String,
     required: [true, 'username must be provided'],
     unique: true,
   },
-  password: { type: String, required: [true, 'password must be provided'] },
+  password: {
+    type: String,
+    required: [true, 'password must be provided'],
+    select: false,
+  },
   fullName: {
     type: fullNameSchema,
     required: [true, 'fullName must be provided'],
@@ -91,9 +96,9 @@ userSchema.pre('save', async function (next) {
   next();
 });
 userSchema.post('save', async function (doc, next) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias, no-unused-vars, @typescript-eslint/no-unused-vars
+  //only the solution i have found to remove password field, though it through error on compile tile, but still it perfectly working on runtime
+  doc.password = undefined;
 
-  doc.password = '';
   next();
 });
 
