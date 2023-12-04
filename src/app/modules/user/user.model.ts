@@ -64,10 +64,25 @@ export const userSchema = new Schema<TUser, UserModel>({
   },
 });
 
-userSchema.statics.isUserExists = async (userId: number) => {
-  const existingUser = User.findOne({ userId });
+userSchema.statics.isUserExists = async (email: string) => {
+  const existingUser = User.findOne({ email });
   return existingUser;
 };
+
+userSchema.statics.findUser = async (userId: number, options: object) => {
+  const user = User.findOne({ userId }, options);
+  return user;
+};
+
+
+
+
+
+
+
+
+
+
 
 userSchema.pre('save', async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias, no-unused-vars, @typescript-eslint/no-unused-vars
@@ -101,6 +116,11 @@ userSchema.post('save', async function (doc, next) {
 
   next();
 });
+
+// userSchema.post('findOne', function (doc, next) {
+//   doc.password = undefined;
+//   next();
+// });
 
 // userSchema.pre('find', function (next) {
 //   // console.log("This is this: ",this)
